@@ -1,4 +1,4 @@
--- FULLY MS V1 - FINAL FIXED + SPEED + TWEEN 21
+-- FORZIE FULLY MS - FINAL RED THEME
 
 local function ClickPlay()
     local Players = game:GetService("Players")
@@ -218,6 +218,7 @@ local FarmSettings = {
     Amount = 8,
     ApartmentCost = 500,
     IngredientCost = 190,
+    TweenSpeed = 21,
 }
 
 local FarmState = {
@@ -315,7 +316,6 @@ local function GetCleanedObjects()
     return objects
 end
 
-local objectCache = {}
 local transparencyCache = {}
 local allObjects = {}
 local cacheValid = false
@@ -841,7 +841,7 @@ local function af_Tween(cf)
     local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
     if not hrp then return end
     local dist = (hrp.Position - cf.Position).Magnitude
-    local tw = TweenService:Create(hrp, TweenInfo.new(math.max(dist / 21, 0.05), Enum.EasingStyle.Linear), { CFrame = cf })
+    local tw = TweenService:Create(hrp, TweenInfo.new(math.max(dist / FarmSettings.TweenSpeed, 0.05), Enum.EasingStyle.Linear), { CFrame = cf })
     tw:Play()
     tw.Completed:Wait()
 end
@@ -1130,17 +1130,21 @@ Player.Idled:Connect(function()
     end
 end)
 
+-- ============================================================
+-- UI FORZIE (RED THEME)
+-- ============================================================
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "JENOWA_UI"
+ScreenGui.Name = "FORZIE_UI"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 ScreenGui.IgnoreGuiInset = true
-ScreenGui.Parent = CoreGui
+ScreenGui.Parent = gethui and gethui() or CoreGui
 
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 400, 0, 230)
-MainFrame.Position = UDim2.new(0.5, -200, 0.5, -130)
-MainFrame.BackgroundColor3 = Color3.fromRGB(12, 12, 18)
+MainFrame.Size = UDim2.new(0, 440, 0, 260)
+MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
+MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+MainFrame.BackgroundColor3 = Color3.fromRGB(12, 6, 8)
 MainFrame.BorderSizePixel = 0
 MainFrame.Active = true
 MainFrame.ClipsDescendants = true
@@ -1156,42 +1160,44 @@ RGBStroke.Parent = MainFrame
 local rgbHue = 0
 RunService.RenderStepped:Connect(function()
     pcall(function()
-        rgbHue = (rgbHue + 0.002) % 1
+        rgbHue = (rgbHue + 0.002) % 0.08
         RGBStroke.Color = Color3.fromHSV(rgbHue, 0.9, 1)
     end)
 end)
 
-MainFrame.Parent = ScreenGui
-
 local TopBar = Instance.new("Frame")
 TopBar.Size = UDim2.new(1, 0, 0, 36)
-TopBar.BackgroundColor3 = Color3.fromRGB(18, 18, 26)
+TopBar.BackgroundColor3 = Color3.fromRGB(35, 8, 12)
 TopBar.BorderSizePixel = 0
 TopBar.Parent = MainFrame
 Instance.new("UICorner", TopBar).CornerRadius = UDim.new(0, 10)
 
-local TopBarBottom = Instance.new("Frame")
-TopBarBottom.Size = UDim2.new(1, 0, 0, 6)
-TopBarBottom.Position = UDim2.new(0, 0, 1, -6)
-TopBarBottom.BackgroundColor3 = Color3.fromRGB(18, 18, 26)
-TopBarBottom.BorderSizePixel = 0
-TopBarBottom.Parent = TopBar
-
 local TitleLabel = Instance.new("TextLabel")
-TitleLabel.Size = UDim2.new(1, -60, 1, 0)
+TitleLabel.Size = UDim2.new(0, 100, 1, 0)
 TitleLabel.Position = UDim2.new(0, 14, 0, 0)
 TitleLabel.BackgroundTransparency = 1
-TitleLabel.Text = "JENOWA"
+TitleLabel.Text = "FORZIE"
 TitleLabel.Font = Enum.Font.GothamBold
 TitleLabel.TextSize = 16
-TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+TitleLabel.TextColor3 = Color3.fromRGB(220, 40, 60)
 TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
 TitleLabel.Parent = TopBar
+
+local UserLabel = Instance.new("TextLabel")
+UserLabel.Size = UDim2.new(0, 160, 1, 0)
+UserLabel.Position = UDim2.new(1, -195, 0, 0)
+UserLabel.BackgroundTransparency = 1
+UserLabel.Text = Player.DisplayName or Player.Name
+UserLabel.Font = Enum.Font.GothamMedium
+UserLabel.TextSize = 11
+UserLabel.TextColor3 = Color3.fromRGB(220, 120, 130)
+UserLabel.TextXAlignment = Enum.TextXAlignment.Right
+UserLabel.Parent = TopBar
 
 local CloseBtn = Instance.new("TextButton")
 CloseBtn.Size = UDim2.new(0, 22, 0, 22)
 CloseBtn.Position = UDim2.new(1, -28, 0, 7)
-CloseBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 55)
+CloseBtn.BackgroundColor3 = Color3.fromRGB(80, 15, 25)
 CloseBtn.Text = "X"
 CloseBtn.Font = Enum.Font.GothamBold
 CloseBtn.TextSize = 12
@@ -1211,7 +1217,7 @@ Content.Parent = MainFrame
 local FarmSection = Instance.new("Frame")
 FarmSection.Size = UDim2.new(0.5, -18, 1, -24)
 FarmSection.Position = UDim2.new(0, 12, 0, 12)
-FarmSection.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
+FarmSection.BackgroundColor3 = Color3.fromRGB(28, 10, 14)
 FarmSection.BorderSizePixel = 0
 Instance.new("UICorner", FarmSection).CornerRadius = UDim.new(0, 8)
 FarmSection.Parent = Content
@@ -1220,10 +1226,10 @@ local FarmTitle = Instance.new("TextLabel")
 FarmTitle.Size = UDim2.new(1, -16, 0, 22)
 FarmTitle.Position = UDim2.new(0, 8, 0, 8)
 FarmTitle.BackgroundTransparency = 1
-FarmTitle.Text = "FARM SETTINGS"
+FarmTitle.Text = "FARM"
 FarmTitle.Font = Enum.Font.GothamBold
 FarmTitle.TextSize = 12
-FarmTitle.TextColor3 = Color3.fromRGB(160, 80, 220)
+FarmTitle.TextColor3 = Color3.fromRGB(220, 40, 60)
 FarmTitle.TextXAlignment = Enum.TextXAlignment.Left
 FarmTitle.Parent = FarmSection
 
@@ -1239,14 +1245,14 @@ ToggleLabel.BackgroundTransparency = 1
 ToggleLabel.Text = "Autofarming"
 ToggleLabel.Font = Enum.Font.Gotham
 ToggleLabel.TextSize = 12
-ToggleLabel.TextColor3 = Color3.fromRGB(220, 220, 235)
+ToggleLabel.TextColor3 = Color3.fromRGB(240, 230, 232)
 ToggleLabel.TextXAlignment = Enum.TextXAlignment.Left
 ToggleLabel.Parent = ToggleFrame
 
 local ToggleBtn = Instance.new("TextButton")
 ToggleBtn.Size = UDim2.new(0, 50, 0, 24)
 ToggleBtn.Position = UDim2.new(1, -50, 0.5, -12)
-ToggleBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 70)
+ToggleBtn.BackgroundColor3 = Color3.fromRGB(60, 30, 35)
 ToggleBtn.Text = "OFF"
 ToggleBtn.Font = Enum.Font.GothamBold
 ToggleBtn.TextSize = 11
@@ -1260,7 +1266,7 @@ local toggleState = false
 ToggleBtn.MouseButton1Click:Connect(function()
     toggleState = not toggleState
     ToggleBtn.Text = toggleState and "ON" or "OFF"
-    ToggleBtn.BackgroundColor3 = toggleState and Color3.fromRGB(0, 180, 80) or Color3.fromRGB(50, 50, 70)
+    ToggleBtn.BackgroundColor3 = toggleState and Color3.fromRGB(200, 35, 55) or Color3.fromRGB(60, 30, 35)
     if toggleState then
         if _G.StartFullyFarm then task.spawn(_G.StartFullyFarm) end
     else
@@ -1280,14 +1286,14 @@ SpeedLabel.BackgroundTransparency = 1
 SpeedLabel.Text = "Speed Tween (22)"
 SpeedLabel.Font = Enum.Font.Gotham
 SpeedLabel.TextSize = 12
-SpeedLabel.TextColor3 = Color3.fromRGB(220, 220, 235)
+SpeedLabel.TextColor3 = Color3.fromRGB(240, 230, 232)
 SpeedLabel.TextXAlignment = Enum.TextXAlignment.Left
 SpeedLabel.Parent = SpeedFrame
 
 local SpeedBtn = Instance.new("TextButton")
 SpeedBtn.Size = UDim2.new(0, 50, 0, 24)
 SpeedBtn.Position = UDim2.new(1, -50, 0.5, -12)
-SpeedBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 70)
+SpeedBtn.BackgroundColor3 = Color3.fromRGB(60, 30, 35)
 SpeedBtn.Text = "OFF"
 SpeedBtn.Font = Enum.Font.GothamBold
 SpeedBtn.TextSize = 11
@@ -1301,13 +1307,68 @@ local speedState = false
 SpeedBtn.MouseButton1Click:Connect(function()
     speedState = not speedState
     SpeedBtn.Text = speedState and "ON" or "OFF"
-    SpeedBtn.BackgroundColor3 = speedState and Color3.fromRGB(0, 180, 80) or Color3.fromRGB(50, 50, 70)
+    SpeedBtn.BackgroundColor3 = speedState and Color3.fromRGB(200, 35, 55) or Color3.fromRGB(60, 30, 35)
     setTweenSpeed(speedState)
 end)
 
+local XRayFrame = Instance.new("Frame")
+XRayFrame.Size = UDim2.new(1, -16, 0, 30)
+XRayFrame.Position = UDim2.new(0, 8, 0, 114)
+XRayFrame.BackgroundTransparency = 1
+XRayFrame.Parent = FarmSection
+
+local XRayLabel = Instance.new("TextLabel")
+XRayLabel.Size = UDim2.new(0.55, 0, 1, 0)
+XRayLabel.BackgroundTransparency = 1
+XRayLabel.Text = "X-Ray"
+XRayLabel.Font = Enum.Font.Gotham
+XRayLabel.TextSize = 12
+XRayLabel.TextColor3 = Color3.fromRGB(240, 230, 232)
+XRayLabel.TextXAlignment = Enum.TextXAlignment.Left
+XRayLabel.Parent = XRayFrame
+
+local XRayBtn = Instance.new("TextButton")
+XRayBtn.Size = UDim2.new(0, 50, 0, 24)
+XRayBtn.Position = UDim2.new(1, -50, 0.5, -12)
+XRayBtn.BackgroundColor3 = Color3.fromRGB(60, 30, 35)
+XRayBtn.Text = "OFF"
+XRayBtn.Font = Enum.Font.GothamBold
+XRayBtn.TextSize = 11
+XRayBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+XRayBtn.BorderSizePixel = 0
+XRayBtn.AutoButtonColor = false
+Instance.new("UICorner", XRayBtn).CornerRadius = UDim.new(0, 5)
+XRayBtn.Parent = XRayFrame
+
+local xrayState = false
+XRayBtn.MouseButton1Click:Connect(function()
+    xrayState = not xrayState
+    XRayBtn.Text = xrayState and "ON" or "OFF"
+    XRayBtn.BackgroundColor3 = xrayState and Color3.fromRGB(200, 35, 55) or Color3.fromRGB(60, 30, 35)
+    if xrayState then
+        if _G.StartXRay then _G.StartXRay() end
+    else
+        if _G.StopXRay then _G.StopXRay() end
+    end
+end)
+
+local RefreshBtn = Instance.new("TextButton")
+RefreshBtn.Size = UDim2.new(1, -16, 0, 24)
+RefreshBtn.Position = UDim2.new(0, 8, 0, 152)
+RefreshBtn.BackgroundColor3 = Color3.fromRGB(60, 30, 35)
+RefreshBtn.Text = "Refresh Cache"
+RefreshBtn.Font = Enum.Font.GothamBold
+RefreshBtn.TextSize = 11
+RefreshBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+RefreshBtn.BorderSizePixel = 0
+RefreshBtn.AutoButtonColor = false
+Instance.new("UICorner", RefreshBtn).CornerRadius = UDim.new(0, 5)
+RefreshBtn.Parent = FarmSection
+RefreshBtn.MouseButton1Click:Connect(function() if _G.RefreshCache then _G.RefreshCache() end end)
+
 local SliderFrame = Instance.new("Frame")
 SliderFrame.Size = UDim2.new(1, -16, 0, 55)
-SliderFrame.Position = UDim2.new(0, 8, 0, 128)
+SliderFrame.Position = UDim2.new(0, 8, 0, 184)
 SliderFrame.BackgroundTransparency = 1
 SliderFrame.Parent = FarmSection
 
@@ -1317,21 +1378,21 @@ SliderLabel.BackgroundTransparency = 1
 SliderLabel.Text = "Buy Amount: " .. FarmSettings.Amount
 SliderLabel.Font = Enum.Font.Gotham
 SliderLabel.TextSize = 11
-SliderLabel.TextColor3 = Color3.fromRGB(200, 200, 210)
+SliderLabel.TextColor3 = Color3.fromRGB(200, 180, 185)
 SliderLabel.TextXAlignment = Enum.TextXAlignment.Left
 SliderLabel.Parent = SliderFrame
 
 local SliderTrack = Instance.new("Frame")
 SliderTrack.Size = UDim2.new(1, 0, 0, 6)
 SliderTrack.Position = UDim2.new(0, 0, 0, 22)
-SliderTrack.BackgroundColor3 = Color3.fromRGB(50, 50, 70)
+SliderTrack.BackgroundColor3 = Color3.fromRGB(60, 25, 30)
 SliderTrack.BorderSizePixel = 0
 Instance.new("UICorner", SliderTrack).CornerRadius = UDim.new(1, 0)
 SliderTrack.Parent = SliderFrame
 
 local SliderFill = Instance.new("Frame")
 SliderFill.Size = UDim2.new((FarmSettings.Amount - 1) / 49, 0, 1, 0)
-SliderFill.BackgroundColor3 = Color3.fromRGB(160, 80, 220)
+SliderFill.BackgroundColor3 = Color3.fromRGB(200, 30, 45)
 SliderFill.BorderSizePixel = 0
 Instance.new("UICorner", SliderFill).CornerRadius = UDim.new(1, 0)
 SliderFill.Parent = SliderTrack
@@ -1347,7 +1408,7 @@ SliderKnob.Parent = SliderTrack
 local TextboxFrame = Instance.new("Frame")
 TextboxFrame.Size = UDim2.new(1, 0, 0, 24)
 TextboxFrame.Position = UDim2.new(0, 0, 0, 36)
-TextboxFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 42)
+TextboxFrame.BackgroundColor3 = Color3.fromRGB(45, 15, 20)
 TextboxFrame.BorderSizePixel = 0
 Instance.new("UICorner", TextboxFrame).CornerRadius = UDim.new(0, 5)
 TextboxFrame.Parent = SliderFrame
@@ -1357,11 +1418,11 @@ Textbox.Size = UDim2.new(1, -16, 1, 0)
 Textbox.Position = UDim2.new(0, 8, 0, 0)
 Textbox.BackgroundTransparency = 1
 Textbox.Text = tostring(FarmSettings.Amount)
-Textbox.PlaceholderText = "Type amount (1-50)..."
+Textbox.PlaceholderText = "Type amount 1-50"
 Textbox.Font = Enum.Font.Gotham
 Textbox.TextSize = 11
 Textbox.TextColor3 = Color3.fromRGB(255, 255, 255)
-Textbox.PlaceholderColor3 = Color3.fromRGB(120, 120, 140)
+Textbox.PlaceholderColor3 = Color3.fromRGB(140, 100, 105)
 Textbox.TextXAlignment = Enum.TextXAlignment.Left
 Textbox.ClearTextOnFocus = false
 Textbox.Parent = TextboxFrame
@@ -1384,30 +1445,24 @@ SliderTrack.InputBegan:Connect(function(input)
         updateSlider(1 + relX * 49)
     end
 end)
-
 UserInputService.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        sliderDragging = false
-    end
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then sliderDragging = false end
 end)
-
 UserInputService.InputChanged:Connect(function(input)
     if sliderDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
         local relX = math.clamp((input.Position.X - SliderTrack.AbsolutePosition.X) / SliderTrack.AbsoluteSize.X, 0, 1)
         updateSlider(1 + relX * 49)
     end
 end)
-
 Textbox.FocusLost:Connect(function()
     local num = tonumber(Textbox.Text)
-    if num and num >= 1 and num <= 50 then updateSlider(num)
-    else Textbox.Text = tostring(FarmSettings.Amount) end
+    if num and num >= 1 and num <= 50 then updateSlider(num) else Textbox.Text = tostring(FarmSettings.Amount) end
 end)
 
 local StatsSection = Instance.new("Frame")
 StatsSection.Size = UDim2.new(0.5, -18, 1, -24)
 StatsSection.Position = UDim2.new(0.5, 6, 0, 12)
-StatsSection.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
+StatsSection.BackgroundColor3 = Color3.fromRGB(28, 10, 14)
 StatsSection.BorderSizePixel = 0
 Instance.new("UICorner", StatsSection).CornerRadius = UDim.new(0, 8)
 StatsSection.Parent = Content
@@ -1416,10 +1471,10 @@ local StatsTitle = Instance.new("TextLabel")
 StatsTitle.Size = UDim2.new(1, -16, 0, 22)
 StatsTitle.Position = UDim2.new(0, 8, 0, 8)
 StatsTitle.BackgroundTransparency = 1
-StatsTitle.Text = "STATISTICS"
+StatsTitle.Text = "STATS"
 StatsTitle.Font = Enum.Font.GothamBold
 StatsTitle.TextSize = 12
-StatsTitle.TextColor3 = Color3.fromRGB(160, 80, 220)
+StatsTitle.TextColor3 = Color3.fromRGB(220, 40, 60)
 StatsTitle.TextXAlignment = Enum.TextXAlignment.Left
 StatsTitle.Parent = StatsSection
 
@@ -1427,10 +1482,10 @@ local MarshLabel = Instance.new("TextLabel")
 MarshLabel.Size = UDim2.new(1, -16, 0, 20)
 MarshLabel.Position = UDim2.new(0, 8, 0, 40)
 MarshLabel.BackgroundTransparency = 1
-MarshLabel.Text = "Marshmallow Made: 0"
+MarshLabel.Text = "Made: 0"
 MarshLabel.Font = Enum.Font.Gotham
 MarshLabel.TextSize = 12
-MarshLabel.TextColor3 = Color3.fromRGB(220, 220, 235)
+MarshLabel.TextColor3 = Color3.fromRGB(240, 230, 232)
 MarshLabel.TextXAlignment = Enum.TextXAlignment.Left
 MarshLabel.Parent = StatsSection
 
@@ -1441,18 +1496,40 @@ SoldLabel.BackgroundTransparency = 1
 SoldLabel.Text = "Sold: 0"
 SoldLabel.Font = Enum.Font.Gotham
 SoldLabel.TextSize = 12
-SoldLabel.TextColor3 = Color3.fromRGB(220, 220, 235)
+SoldLabel.TextColor3 = Color3.fromRGB(240, 230, 232)
 SoldLabel.TextXAlignment = Enum.TextXAlignment.Left
 SoldLabel.Parent = StatsSection
 
+local ProfitLabel = Instance.new("TextLabel")
+ProfitLabel.Size = UDim2.new(1, -16, 0, 20)
+ProfitLabel.Position = UDim2.new(0, 8, 0, 84)
+ProfitLabel.BackgroundTransparency = 1
+ProfitLabel.Text = "Profit: $0"
+ProfitLabel.Font = Enum.Font.Gotham
+ProfitLabel.TextSize = 12
+ProfitLabel.TextColor3 = Color3.fromRGB(120, 220, 140)
+ProfitLabel.TextXAlignment = Enum.TextXAlignment.Left
+ProfitLabel.Parent = StatsSection
+
+local RuntimeLabel = Instance.new("TextLabel")
+RuntimeLabel.Size = UDim2.new(1, -16, 0, 20)
+RuntimeLabel.Position = UDim2.new(0, 8, 0, 106)
+RuntimeLabel.BackgroundTransparency = 1
+RuntimeLabel.Text = "Runtime: 00:00"
+RuntimeLabel.Font = Enum.Font.Gotham
+RuntimeLabel.TextSize = 12
+RuntimeLabel.TextColor3 = Color3.fromRGB(200, 180, 185)
+RuntimeLabel.TextXAlignment = Enum.TextXAlignment.Left
+RuntimeLabel.Parent = StatsSection
+
 local StatusLabel = Instance.new("TextLabel")
 StatusLabel.Size = UDim2.new(1, -16, 0, 20)
-StatusLabel.Position = UDim2.new(0, 8, 0, 84)
+StatusLabel.Position = UDim2.new(0, 8, 0, 128)
 StatusLabel.BackgroundTransparency = 1
 StatusLabel.Text = "Status: Idle"
 StatusLabel.Font = Enum.Font.Gotham
 StatusLabel.TextSize = 11
-StatusLabel.TextColor3 = Color3.fromRGB(160, 160, 180)
+StatusLabel.TextColor3 = Color3.fromRGB(180, 140, 145)
 StatusLabel.TextXAlignment = Enum.TextXAlignment.Left
 StatusLabel.TextWrapped = true
 StatusLabel.Parent = StatsSection
@@ -1460,15 +1537,20 @@ StatusLabel.Parent = StatsSection
 task.spawn(function()
     while ScreenGui.Parent do
         pcall(function()
-            MarshLabel.Text = "Marshmallow Made: " .. (FarmState.MarshmallowsMade or 0)
+            MarshLabel.Text = "Made: " .. (FarmState.MarshmallowsMade or 0)
             SoldLabel.Text = "Sold: " .. (FarmState.Sold or 0)
+            ProfitLabel.Text = "Profit: $" .. (FarmState.Profit or 0)
+            local rt = os.time() - (FarmState.StartTime or os.time())
+            RuntimeLabel.Text = string.format("Runtime: %02d:%02d", math.floor(rt/60), rt%60)
             if FarmRunning then
                 StatusLabel.Text = "Status: " .. (FarmState.Step or "Running")
+                StatusLabel.TextColor3 = Color3.fromRGB(220, 40, 60)
             else
                 StatusLabel.Text = "Status: Stopped"
+                StatusLabel.TextColor3 = Color3.fromRGB(140, 100, 105)
             end
         end)
-        task.wait(0.5)
+        task.wait(1)
     end
 end)
 
@@ -1483,16 +1565,12 @@ TopBar.InputBegan:Connect(function(input)
         end)
     end
 end)
-
 UserInputService.InputChanged:Connect(function(input)
     if dragData.active and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
         local delta = input.Position - dragData.startMouse
         MainFrame.Position = UDim2.new(dragData.startPos.X.Scale, dragData.startPos.X.Offset + delta.X, dragData.startPos.Y.Scale, dragData.startPos.Y.Offset + delta.Y)
     end
 end)
-
 UserInputService.InputBegan:Connect(function(input)
-    if input.KeyCode == Enum.KeyCode.F3 then
-        ScreenGui.Enabled = not ScreenGui.Enabled
-    end
+    if input.KeyCode == Enum.KeyCode.F3 then ScreenGui.Enabled = not ScreenGui.Enabled end
 end)
