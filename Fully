@@ -1,4 +1,4 @@
--- FULLY MS V1 - GITHUB AUTO REJOIN
+-- FULLY MS V1 - FINAL FIXED + SPEED + TWEEN 21
 
 local function ClickPlay()
     local Players = game:GetService("Players")
@@ -232,6 +232,49 @@ local FarmRunning = false
 local StopRequest = false
 local FarmThread = nil
 local StartTime = os.time()
+
+-- SPEED TWEEN
+local SpeedConfig = {
+    speed = 22,
+    duration = 0.8,
+    easing = Enum.EasingStyle.Quad,
+    direction = Enum.EasingDirection.Out,
+    enabled = false,
+}
+local current_speed_tween = nil
+
+local function getHum()
+    local c = Player.Character
+    return c and c:FindFirstChildOfClass("Humanoid")
+end
+
+local function applyTweenSpeed()
+    local hum = getHum()
+    if not hum then return end
+    if current_speed_tween then current_speed_tween:Cancel(); current_speed_tween = nil end
+    local info = TweenInfo.new(SpeedConfig.duration, SpeedConfig.easing, SpeedConfig.direction)
+    current_speed_tween = TweenService:Create(hum, info, { WalkSpeed = SpeedConfig.speed })
+    current_speed_tween:Play()
+end
+
+local function resetTweenSpeed()
+    local hum = getHum()
+    if not hum then return end
+    if current_speed_tween then current_speed_tween:Cancel(); current_speed_tween = nil end
+    local info = TweenInfo.new(SpeedConfig.duration, SpeedConfig.easing, SpeedConfig.direction)
+    current_speed_tween = TweenService:Create(hum, info, { WalkSpeed = 16 })
+    current_speed_tween:Play()
+end
+
+local function setTweenSpeed(state)
+    SpeedConfig.enabled = state
+    if state then applyTweenSpeed() else resetTweenSpeed() end
+end
+
+Player.CharacterAdded:Connect(function()
+    task.wait(0.5)
+    if SpeedConfig.enabled then applyTweenSpeed() end
+end)
 
 local CONFIG = { Enabled = true, MaxDistance = 10, Transparency = 0.95 }
 
@@ -798,7 +841,7 @@ local function af_Tween(cf)
     local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
     if not hrp then return end
     local dist = (hrp.Position - cf.Position).Magnitude
-    local tw = TweenService:Create(hrp, TweenInfo.new(math.max(dist / 20, 0.05), Enum.EasingStyle.Linear), { CFrame = cf })
+    local tw = TweenService:Create(hrp, TweenInfo.new(math.max(dist / 21, 0.05), Enum.EasingStyle.Linear), { CFrame = cf })
     tw:Play()
     tw.Completed:Wait()
 end
@@ -1095,7 +1138,7 @@ ScreenGui.IgnoreGuiInset = true
 ScreenGui.Parent = CoreGui
 
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 400, 0, 200)
+MainFrame.Size = UDim2.new(0, 400, 0, 230)
 MainFrame.Position = UDim2.new(0.5, -200, 0.5, -130)
 MainFrame.BackgroundColor3 = Color3.fromRGB(12, 12, 18)
 MainFrame.BorderSizePixel = 0
@@ -1225,9 +1268,46 @@ ToggleBtn.MouseButton1Click:Connect(function()
     end
 end)
 
+local SpeedFrame = Instance.new("Frame")
+SpeedFrame.Size = UDim2.new(1, -16, 0, 30)
+SpeedFrame.Position = UDim2.new(0, 8, 0, 76)
+SpeedFrame.BackgroundTransparency = 1
+SpeedFrame.Parent = FarmSection
+
+local SpeedLabel = Instance.new("TextLabel")
+SpeedLabel.Size = UDim2.new(0.55, 0, 1, 0)
+SpeedLabel.BackgroundTransparency = 1
+SpeedLabel.Text = "Speed Tween (22)"
+SpeedLabel.Font = Enum.Font.Gotham
+SpeedLabel.TextSize = 12
+SpeedLabel.TextColor3 = Color3.fromRGB(220, 220, 235)
+SpeedLabel.TextXAlignment = Enum.TextXAlignment.Left
+SpeedLabel.Parent = SpeedFrame
+
+local SpeedBtn = Instance.new("TextButton")
+SpeedBtn.Size = UDim2.new(0, 50, 0, 24)
+SpeedBtn.Position = UDim2.new(1, -50, 0.5, -12)
+SpeedBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 70)
+SpeedBtn.Text = "OFF"
+SpeedBtn.Font = Enum.Font.GothamBold
+SpeedBtn.TextSize = 11
+SpeedBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+SpeedBtn.BorderSizePixel = 0
+SpeedBtn.AutoButtonColor = false
+Instance.new("UICorner", SpeedBtn).CornerRadius = UDim.new(0, 5)
+SpeedBtn.Parent = SpeedFrame
+
+local speedState = false
+SpeedBtn.MouseButton1Click:Connect(function()
+    speedState = not speedState
+    SpeedBtn.Text = speedState and "ON" or "OFF"
+    SpeedBtn.BackgroundColor3 = speedState and Color3.fromRGB(0, 180, 80) or Color3.fromRGB(50, 50, 70)
+    setTweenSpeed(speedState)
+end)
+
 local SliderFrame = Instance.new("Frame")
 SliderFrame.Size = UDim2.new(1, -16, 0, 55)
-SliderFrame.Position = UDim2.new(0, 8, 0, 76)
+SliderFrame.Position = UDim2.new(0, 8, 0, 128)
 SliderFrame.BackgroundTransparency = 1
 SliderFrame.Parent = FarmSection
 
