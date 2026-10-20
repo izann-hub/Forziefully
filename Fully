@@ -1,4 +1,4 @@
--- FORZIE FULLY MS - FINAL RED THEME
+-- FORZIE FULLY MS - FINAL FIXED FULL SOURCE
 
 local function ClickPlay()
     local Players = game:GetService("Players")
@@ -180,8 +180,6 @@ task.spawn(function()
     end
 end)
 
-print("HYPHON EMULATOR BYPASS ACTIVE")
-
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
@@ -234,7 +232,6 @@ local StopRequest = false
 local FarmThread = nil
 local StartTime = os.time()
 
--- SPEED TWEEN
 local SpeedConfig = {
     speed = 22,
     duration = 0.8,
@@ -316,6 +313,7 @@ local function GetCleanedObjects()
     return objects
 end
 
+local objectCache = {}
 local transparencyCache = {}
 local allObjects = {}
 local cacheValid = false
@@ -1130,9 +1128,6 @@ Player.Idled:Connect(function()
     end
 end)
 
--- ============================================================
--- UI FORZIE (RED THEME)
--- ============================================================
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "FORZIE_UI"
 ScreenGui.ResetOnSpawn = false
