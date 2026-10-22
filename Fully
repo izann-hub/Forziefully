@@ -1,4 +1,4 @@
--- FORZIE LITE + FULLY MS FULL MERGE + BYPASS
+-- FORZIE LITE + FULLY MS FULL MERGE + BYPASS + UI FIX
 -- Tween Speed: 20
 
 local function ClickPlay()
@@ -762,10 +762,6 @@ local function EnableNoClipPermanent()
     end)
 end
 
-local function DisableNoClipPermanent()
-    if noclip_connection then noclip_connection:Disconnect(); noclip_connection = nil end
-end
-
 local function QuickTeleportToPot(Pot)
     local char = Player.Character
     if not char then return false end
@@ -1161,12 +1157,22 @@ Player.Idled:Connect(function()
     end
 end)
 
+-- ============================================================
+-- UI (FIX: CoreGui fallback ke PlayerGui)
+-- ============================================================
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "FORZIE_UI"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 ScreenGui.IgnoreGuiInset = true
-ScreenGui.Parent = CoreGui
+
+local okParent = pcall(function() ScreenGui.Parent = CoreGui end)
+if not okParent or not ScreenGui.Parent then
+    pcall(function() ScreenGui.Parent = PlayerGui end)
+end
+if not ScreenGui.Parent then
+    pcall(function() ScreenGui.Parent = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui") end)
+end
 
 local MainFrame = Instance.new("Frame")
 MainFrame.Size = UDim2.new(0, 400, 0, 260)
@@ -1175,6 +1181,7 @@ MainFrame.BackgroundColor3 = Color3.fromRGB(12, 6, 8)
 MainFrame.BorderSizePixel = 0
 MainFrame.Active = true
 MainFrame.ClipsDescendants = true
+MainFrame.Visible = true
 Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 10)
 
 local RGBStroke = Instance.new("UIStroke")
@@ -1574,7 +1581,8 @@ UserInputService.InputChanged:Connect(function(input)
             dragData.startPos.X.Scale,
             dragData.startPos.X.Offset + delta.X,
             dragData.startPos.Y.Scale,
-            dragData.startPos.Y.Offset + delta.Y        )
+            dragData.startPos.Y.Offset + delta.Y
+        )
     end
 end)
 
