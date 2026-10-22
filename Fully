@@ -1,5 +1,5 @@
 -- ============================================================
--- FULLY MS V1 + UI FORZIE (GABUNGAN)
+-- FULLY MS V1 + UI FORZIE (GABUNGAN) + ANIMASI + BINTANG JATUH
 -- ============================================================
 
 -- ============================================================
@@ -364,7 +364,7 @@ end
 -- RGB NAME
 -- ============================================================
 local RGBEnabled = true
-local CurrentDisplayName = "GHOST.LOL"
+local CurrentDisplayName = "FAHRIL"
 local RGBLoop = nil
 local function GenerateRGB()
     local colors = {
@@ -1140,7 +1140,7 @@ _G.FormatMoney = FormatMoney
 -- ============================================================
 local AutoRejoinConfig = {
     Enabled = true,
-    ScriptUrl = "https://pastefy.app/82E6hkS0/raw",
+    ScriptUrl = "https://raw.githubusercontent.com/izann-hub/Forziefully/refs/heads/main/Fully",
     GameId = 10179538382,
 }
 local IsDeathTeleport = false
@@ -1226,7 +1226,7 @@ Player.Idled:Connect(function()
 end)
 
 -- ============================================================
--- UI FORZIE
+-- UI FORZIE (DENGAN ANIMASI BUKA + BINTANG JATUH)
 -- ============================================================
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "FORZIE_UI"
@@ -1252,12 +1252,66 @@ MainFrame.Visible = true
 MainFrame.Parent = ScreenGui
 Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 10)
 
+-- UIScale untuk animasi
+local UIScale = Instance.new("UIScale")
+UIScale.Scale = 0
+UIScale.Parent = MainFrame
+
+-- Background Bintang Jatuh
+local BackgroundStars = Instance.new("Frame")
+BackgroundStars.Name = "BackgroundStars"
+BackgroundStars.Size = UDim2.new(1, 0, 1, 0)
+BackgroundStars.BackgroundTransparency = 1
+BackgroundStars.ClipsDescendants = true
+BackgroundStars.ZIndex = 1
+BackgroundStars.Parent = MainFrame
+Instance.new("UICorner", BackgroundStars).CornerRadius = UDim.new(0, 10)
+
+-- Fungsi membuat bintang
+local function CreateStar()
+    local star = Instance.new("Frame")
+    star.Size = UDim2.new(0, 2, 0, 35)
+    star.BackgroundColor3 = Color3.fromRGB(255, 150, 170)
+    star.BackgroundTransparency = 0.3
+    star.BorderSizePixel = 0
+    star.Rotation = 35
+    star.ZIndex = 1
+    
+    local startX = math.random(-100, 450)
+    local startY = -50
+    local endX = startX - 250
+    local endY = 300
+    
+    star.Position = UDim2.new(0, startX, 0, startY)
+    star.Parent = BackgroundStars
+    
+    local duration = math.random(25, 45) / 10
+    local tweenInfo = TweenInfo.new(duration, Enum.EasingStyle.Linear)
+    local tween = TweenService:Create(star, tweenInfo, {
+        Position = UDim2.new(0, endX, 0, endY)
+    })
+    
+    tween:Play()
+    tween.Completed:Connect(function()
+        star:Destroy()
+        if MainFrame.Parent and UIScale.Scale > 0.1 then
+            CreateStar()
+        end
+    end)
+end
+
+for i = 1, 6 do
+    task.spawn(CreateStar)
+end
+
+-- RGB Stroke
 local RGBStroke = Instance.new("UIStroke")
 RGBStroke.Name = "RGBStroke"
 RGBStroke.Thickness = 2
 RGBStroke.Transparency = 0
 RGBStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 RGBStroke.Parent = MainFrame
+RGBStroke.ZIndex = 10
 
 local rgbHue = 0
 RunService.RenderStepped:Connect(function()
@@ -1265,10 +1319,12 @@ RunService.RenderStepped:Connect(function()
     RGBStroke.Color = Color3.fromHSV(rgbHue, 0.9, 1)
 end)
 
+-- TopBar
 local TopBar = Instance.new("Frame")
 TopBar.Size = UDim2.new(1, 0, 0, 36)
 TopBar.BackgroundColor3 = Color3.fromRGB(35, 8, 12)
 TopBar.BorderSizePixel = 0
+TopBar.ZIndex = 5
 TopBar.Parent = MainFrame
 Instance.new("UICorner", TopBar).CornerRadius = UDim.new(0, 10)
 
@@ -1277,6 +1333,7 @@ TopBarBottom.Size = UDim2.new(1, 0, 0, 6)
 TopBarBottom.Position = UDim2.new(0, 0, 1, -6)
 TopBarBottom.BackgroundColor3 = Color3.fromRGB(35, 8, 12)
 TopBarBottom.BorderSizePixel = 0
+TopBarBottom.ZIndex = 5
 TopBarBottom.Parent = TopBar
 
 local TitleLabel = Instance.new("TextLabel")
@@ -1288,6 +1345,7 @@ TitleLabel.Font = Enum.Font.GothamBold
 TitleLabel.TextSize = 16
 TitleLabel.TextColor3 = Color3.fromRGB(220, 40, 60)
 TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+TitleLabel.ZIndex = 5
 TitleLabel.Parent = TopBar
 
 local UserLabel = Instance.new("TextLabel")
@@ -1299,6 +1357,7 @@ UserLabel.Font = Enum.Font.GothamMedium
 UserLabel.TextSize = 11
 UserLabel.TextColor3 = Color3.fromRGB(220, 120, 130)
 UserLabel.TextXAlignment = Enum.TextXAlignment.Right
+UserLabel.ZIndex = 5
 UserLabel.Parent = TopBar
 
 local CloseBtn = Instance.new("TextButton")
@@ -1311,21 +1370,45 @@ CloseBtn.TextSize = 12
 CloseBtn.TextColor3 = Color3.fromRGB(255, 100, 100)
 CloseBtn.BorderSizePixel = 0
 CloseBtn.AutoButtonColor = false
+CloseBtn.ZIndex = 5
 Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 6)
 CloseBtn.Parent = TopBar
-CloseBtn.MouseButton1Click:Connect(function() ScreenGui.Enabled = false end)
 
+-- Close Animation
+CloseBtn.MouseButton1Click:Connect(function()
+    local closeTween = TweenService:Create(UIScale, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Scale = 0})
+    closeTween:Play()
+    closeTween.Completed:Connect(function()
+        ScreenGui.Enabled = false
+    end)
+end)
+
+-- Buka Animation
+local function OpenUI()
+    ScreenGui.Enabled = true
+    UIScale.Scale = 0
+    local openTween = TweenService:Create(UIScale, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Scale = 1})
+    openTween:Play()
+end
+
+task.wait(0.1)
+OpenUI()
+
+-- Content
 local Content = Instance.new("Frame")
 Content.Size = UDim2.new(1, 0, 1, -36)
 Content.Position = UDim2.new(0, 0, 0, 36)
 Content.BackgroundTransparency = 1
+Content.ZIndex = 5
 Content.Parent = MainFrame
 
+-- KIRI: FarmSection
 local FarmSection = Instance.new("Frame")
 FarmSection.Size = UDim2.new(0.5, -18, 1, -24)
 FarmSection.Position = UDim2.new(0, 12, 0, 12)
 FarmSection.BackgroundColor3 = Color3.fromRGB(28, 10, 14)
 FarmSection.BorderSizePixel = 0
+FarmSection.ZIndex = 5
 Instance.new("UICorner", FarmSection).CornerRadius = UDim.new(0, 8)
 FarmSection.Parent = Content
 
@@ -1338,12 +1421,15 @@ FarmTitle.Font = Enum.Font.GothamBold
 FarmTitle.TextSize = 12
 FarmTitle.TextColor3 = Color3.fromRGB(220, 40, 60)
 FarmTitle.TextXAlignment = Enum.TextXAlignment.Left
+FarmTitle.ZIndex = 6
 FarmTitle.Parent = FarmSection
 
+-- Autofarming
 local ToggleFrame = Instance.new("Frame")
 ToggleFrame.Size = UDim2.new(1, -16, 0, 30)
 ToggleFrame.Position = UDim2.new(0, 8, 0, 38)
 ToggleFrame.BackgroundTransparency = 1
+ToggleFrame.ZIndex = 5
 ToggleFrame.Parent = FarmSection
 
 local ToggleLabel = Instance.new("TextLabel")
@@ -1354,6 +1440,7 @@ ToggleLabel.Font = Enum.Font.Gotham
 ToggleLabel.TextSize = 12
 ToggleLabel.TextColor3 = Color3.fromRGB(240, 230, 232)
 ToggleLabel.TextXAlignment = Enum.TextXAlignment.Left
+ToggleLabel.ZIndex = 6
 ToggleLabel.Parent = ToggleFrame
 
 local ToggleBtn = Instance.new("TextButton")
@@ -1366,6 +1453,7 @@ ToggleBtn.TextSize = 11
 ToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 ToggleBtn.BorderSizePixel = 0
 ToggleBtn.AutoButtonColor = false
+ToggleBtn.ZIndex = 6
 Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(0, 5)
 ToggleBtn.Parent = ToggleFrame
 
@@ -1381,10 +1469,12 @@ ToggleBtn.MouseButton1Click:Connect(function()
     end
 end)
 
+-- X-Ray
 local XRayFrame = Instance.new("Frame")
 XRayFrame.Size = UDim2.new(1, -16, 0, 30)
 XRayFrame.Position = UDim2.new(0, 8, 0, 72)
 XRayFrame.BackgroundTransparency = 1
+XRayFrame.ZIndex = 5
 XRayFrame.Parent = FarmSection
 
 local XRayLabel = Instance.new("TextLabel")
@@ -1395,6 +1485,7 @@ XRayLabel.Font = Enum.Font.Gotham
 XRayLabel.TextSize = 12
 XRayLabel.TextColor3 = Color3.fromRGB(240, 230, 232)
 XRayLabel.TextXAlignment = Enum.TextXAlignment.Left
+XRayLabel.ZIndex = 6
 XRayLabel.Parent = XRayFrame
 
 local XRayBtn = Instance.new("TextButton")
@@ -1407,6 +1498,7 @@ XRayBtn.TextSize = 11
 XRayBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 XRayBtn.BorderSizePixel = 0
 XRayBtn.AutoButtonColor = false
+XRayBtn.ZIndex = 6
 Instance.new("UICorner", XRayBtn).CornerRadius = UDim.new(0, 5)
 XRayBtn.Parent = XRayFrame
 
@@ -1422,10 +1514,12 @@ XRayBtn.MouseButton1Click:Connect(function()
     end
 end)
 
+-- Slider
 local SliderFrame = Instance.new("Frame")
 SliderFrame.Size = UDim2.new(1, -16, 0, 55)
 SliderFrame.Position = UDim2.new(0, 8, 0, 110)
 SliderFrame.BackgroundTransparency = 1
+SliderFrame.ZIndex = 5
 SliderFrame.Parent = FarmSection
 
 local SliderLabel = Instance.new("TextLabel")
@@ -1436,6 +1530,7 @@ SliderLabel.Font = Enum.Font.Gotham
 SliderLabel.TextSize = 11
 SliderLabel.TextColor3 = Color3.fromRGB(200, 180, 185)
 SliderLabel.TextXAlignment = Enum.TextXAlignment.Left
+SliderLabel.ZIndex = 6
 SliderLabel.Parent = SliderFrame
 
 local SliderTrack = Instance.new("Frame")
@@ -1443,6 +1538,7 @@ SliderTrack.Size = UDim2.new(1, 0, 0, 6)
 SliderTrack.Position = UDim2.new(0, 0, 0, 22)
 SliderTrack.BackgroundColor3 = Color3.fromRGB(60, 25, 30)
 SliderTrack.BorderSizePixel = 0
+SliderTrack.ZIndex = 6
 Instance.new("UICorner", SliderTrack).CornerRadius = UDim.new(1, 0)
 SliderTrack.Parent = SliderFrame
 
@@ -1450,6 +1546,7 @@ local SliderFill = Instance.new("Frame")
 SliderFill.Size = UDim2.new((FarmSettings.Amount - 1) / 49, 0, 1, 0)
 SliderFill.BackgroundColor3 = Color3.fromRGB(200, 30, 45)
 SliderFill.BorderSizePixel = 0
+SliderFill.ZIndex = 7
 Instance.new("UICorner", SliderFill).CornerRadius = UDim.new(1, 0)
 SliderFill.Parent = SliderTrack
 
@@ -1458,6 +1555,7 @@ SliderKnob.Size = UDim2.new(0, 14, 0, 14)
 SliderKnob.Position = UDim2.new((FarmSettings.Amount - 1) / 49, -7, 0.5, -7)
 SliderKnob.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 SliderKnob.BorderSizePixel = 0
+SliderKnob.ZIndex = 8
 Instance.new("UICorner", SliderKnob).CornerRadius = UDim.new(1, 0)
 SliderKnob.Parent = SliderTrack
 
@@ -1466,6 +1564,7 @@ TextboxFrame.Size = UDim2.new(1, 0, 0, 24)
 TextboxFrame.Position = UDim2.new(0, 0, 0, 36)
 TextboxFrame.BackgroundColor3 = Color3.fromRGB(45, 15, 20)
 TextboxFrame.BorderSizePixel = 0
+TextboxFrame.ZIndex = 6
 Instance.new("UICorner", TextboxFrame).CornerRadius = UDim.new(0, 5)
 TextboxFrame.Parent = SliderFrame
 
@@ -1481,6 +1580,7 @@ Textbox.TextColor3 = Color3.fromRGB(255, 255, 255)
 Textbox.PlaceholderColor3 = Color3.fromRGB(140, 100, 105)
 Textbox.TextXAlignment = Enum.TextXAlignment.Left
 Textbox.ClearTextOnFocus = false
+Textbox.ZIndex = 7
 Textbox.Parent = TextboxFrame
 
 local sliderDragging = false
@@ -1521,11 +1621,13 @@ Textbox.FocusLost:Connect(function()
     else Textbox.Text = tostring(FarmSettings.Amount) end
 end)
 
+-- KANAN: StatsSection
 local StatsSection = Instance.new("Frame")
 StatsSection.Size = UDim2.new(0.5, -18, 1, -24)
 StatsSection.Position = UDim2.new(0.5, 6, 0, 12)
 StatsSection.BackgroundColor3 = Color3.fromRGB(28, 10, 14)
 StatsSection.BorderSizePixel = 0
+StatsSection.ZIndex = 5
 Instance.new("UICorner", StatsSection).CornerRadius = UDim.new(0, 8)
 StatsSection.Parent = Content
 
@@ -1538,6 +1640,7 @@ StatsTitle.Font = Enum.Font.GothamBold
 StatsTitle.TextSize = 12
 StatsTitle.TextColor3 = Color3.fromRGB(220, 40, 60)
 StatsTitle.TextXAlignment = Enum.TextXAlignment.Left
+StatsTitle.ZIndex = 6
 StatsTitle.Parent = StatsSection
 
 local MarshLabel = Instance.new("TextLabel")
@@ -1549,6 +1652,7 @@ MarshLabel.Font = Enum.Font.Gotham
 MarshLabel.TextSize = 12
 MarshLabel.TextColor3 = Color3.fromRGB(240, 230, 232)
 MarshLabel.TextXAlignment = Enum.TextXAlignment.Left
+MarshLabel.ZIndex = 6
 MarshLabel.Parent = StatsSection
 
 local SoldLabel = Instance.new("TextLabel")
@@ -1560,44 +1664,26 @@ SoldLabel.Font = Enum.Font.Gotham
 SoldLabel.TextSize = 12
 SoldLabel.TextColor3 = Color3.fromRGB(240, 230, 232)
 SoldLabel.TextXAlignment = Enum.TextXAlignment.Left
+SoldLabel.ZIndex = 6
 SoldLabel.Parent = StatsSection
 
-local CashLabel = Instance.new("TextLabel")
-CashLabel.Size = UDim2.new(1, -16, 0, 20)
-CashLabel.Position = UDim2.new(0, 8, 0, 78)
-CashLabel.BackgroundTransparency = 1
-CashLabel.Text = "Cash: $0"
-CashLabel.Font = Enum.Font.Gotham
-CashLabel.TextSize = 12
-CashLabel.TextColor3 = Color3.fromRGB(240, 230, 232)
-CashLabel.TextXAlignment = Enum.TextXAlignment.Left
-CashLabel.Parent = StatsSection
-
-local ProfitLabel = Instance.new("TextLabel")
-ProfitLabel.Size = UDim2.new(1, -16, 0, 20)
-ProfitLabel.Position = UDim2.new(0, 8, 0, 98)
-ProfitLabel.BackgroundTransparency = 1
-ProfitLabel.Text = "Profit: $0"
-ProfitLabel.Font = Enum.Font.Gotham
-ProfitLabel.TextSize = 12
-ProfitLabel.TextColor3 = Color3.fromRGB(240, 230, 232)
-ProfitLabel.TextXAlignment = Enum.TextXAlignment.Left
-ProfitLabel.Parent = StatsSection
+-- (Cash dan Profit dihilangkan sesuai permintaan sebelumnya)
 
 local BatchLabel = Instance.new("TextLabel")
 BatchLabel.Size = UDim2.new(1, -16, 0, 20)
-BatchLabel.Position = UDim2.new(0, 8, 0, 118)
+BatchLabel.Position = UDim2.new(0, 8, 0, 78)
 BatchLabel.BackgroundTransparency = 1
 BatchLabel.Text = "Batch: 0/0"
 BatchLabel.Font = Enum.Font.Gotham
 BatchLabel.TextSize = 11
 BatchLabel.TextColor3 = Color3.fromRGB(180, 140, 145)
 BatchLabel.TextXAlignment = Enum.TextXAlignment.Left
+BatchLabel.ZIndex = 6
 BatchLabel.Parent = StatsSection
 
 local StatusLabel = Instance.new("TextLabel")
 StatusLabel.Size = UDim2.new(1, -16, 0, 20)
-StatusLabel.Position = UDim2.new(0, 8, 0, 138)
+StatusLabel.Position = UDim2.new(0, 8, 0, 98)
 StatusLabel.BackgroundTransparency = 1
 StatusLabel.Text = "Status: Idle"
 StatusLabel.Font = Enum.Font.Gotham
@@ -1605,6 +1691,7 @@ StatusLabel.TextSize = 11
 StatusLabel.TextColor3 = Color3.fromRGB(180, 140, 145)
 StatusLabel.TextXAlignment = Enum.TextXAlignment.Left
 StatusLabel.TextWrapped = true
+StatusLabel.ZIndex = 6
 StatusLabel.Parent = StatsSection
 
 task.spawn(function()
@@ -1612,8 +1699,6 @@ task.spawn(function()
         pcall(function()
             MarshLabel.Text = "Marshmallow Made: " .. (FarmState.MarshmallowsMade or 0)
             SoldLabel.Text = "Sold: " .. (FarmState.Sold or 0)
-            CashLabel.Text = "Cash: " .. _G.FormatMoney(FarmState.CurrentCash or 0)
-            ProfitLabel.Text = "Profit: " .. _G.FormatMoney(FarmState.Profit or 0)
             BatchLabel.Text = "Batch: " .. (FarmState.BatchProgress or "0/0")
             if FarmRunning then
                 StatusLabel.Text = "Status: " .. (FarmState.Step or "Running")
@@ -1627,6 +1712,7 @@ task.spawn(function()
     end
 end)
 
+-- Drag
 local dragData = {active = false, startMouse = Vector2.new(), startPos = UDim2.new()}
 TopBar.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
@@ -1651,9 +1737,16 @@ UserInputService.InputChanged:Connect(function(input)
     end
 end)
 
+-- F3 Toggle
 UserInputService.InputBegan:Connect(function(input)
     if input.KeyCode == Enum.KeyCode.F3 then
-        ScreenGui.Enabled = not ScreenGui.Enabled
+        if ScreenGui.Enabled then
+            local closeTween = TweenService:Create(UIScale, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Scale = 0})
+            closeTween:Play()
+            closeTween.Completed:Connect(function() ScreenGui.Enabled = false end)
+        else
+            OpenUI()
+        end
     end
 end)
 
