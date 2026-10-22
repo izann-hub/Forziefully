@@ -1,4 +1,5 @@
--- FORZIE FULLY MS - FINAL FIXED FULL SOURCE
+-- FORZIE LITE + FULLY MS FULL MERGE + BYPASS
+-- Tween Speed: 20
 
 local function ClickPlay()
     local Players = game:GetService("Players")
@@ -39,14 +40,12 @@ local function ClickPlay()
     return true
 end
 
-task.spawn(function()
-    local attempts = 0
-    while attempts < 5 do
-        if ClickPlay() then break end
-        attempts = attempts + 1
-        task.wait(1)
-    end
-end)
+local attempts = 0
+while attempts < 5 do
+    if ClickPlay() then break end
+    attempts = attempts + 1
+    task.wait(1)
+end
 
 if not filtergc then
     filtergc = function(ftype, filters, returnSingle)
@@ -132,14 +131,14 @@ pcall(function()
                 end)
             end)
         end
-    end
-    pcall(function()
-        for _, Object in pairs(getgc(true)) do
-            if typeof(Object) == "table" and typeof(rawget(Object, "Homeless")) == "table" then
-                if rawget(Object.Homeless, "MaxDistance") then Object.Homeless.MaxDistance = 9e9 end
+        pcall(function()
+            for _, Object in pairs(getgc(true)) do
+                if typeof(Object) == "table" and typeof(rawget(Object, "Homeless")) == "table" then
+                    if rawget(Object.Homeless, "MaxDistance") then Object.Homeless.MaxDistance = 9e9 end
+                end
             end
-        end
-    end)
+        end)
+    end
 end)
 
 getgenv().HyphonReady = true
@@ -216,15 +215,25 @@ local FarmSettings = {
     Amount = 8,
     ApartmentCost = 500,
     IngredientCost = 190,
-    TweenSpeed = 21,
+    TweenSpeed = 20,
 }
 
 local FarmState = {
-    Cycles = 0, Status = "Idle", Sold = 0, MarshmallowsMade = 0,
-    OwnedAprt = nil, TotalIncome = 0, TotalExpense = 0,
-    PreviousCash = 0, CurrentCash = 0, CashInitialized = false,
-    BatchProgress = "0/0", CurrentBatch = 0, Step = "Idle",
-    Runtime = 0, StartTime = os.time(), Profit = 0,
+    Cycles = 0,
+    Sold = 0,
+    MarshmallowsMade = 0,
+    OwnedAprt = nil,
+    Step = "Idle",
+    TotalIncome = 0,
+    TotalExpense = 0,
+    PreviousCash = 0,
+    CurrentCash = 0,
+    CashInitialized = false,
+    BatchProgress = "0/0",
+    CurrentBatch = 0,
+    Runtime = 0,
+    StartTime = os.time(),
+    Profit = 0,
 }
 
 local FarmRunning = false
@@ -232,49 +241,70 @@ local StopRequest = false
 local FarmThread = nil
 local StartTime = os.time()
 
-local SpeedConfig = {
-    speed = 22,
-    duration = 0.8,
-    easing = Enum.EasingStyle.Quad,
-    direction = Enum.EasingDirection.Out,
-    enabled = false,
-}
-local current_speed_tween = nil
-
-local function getHum()
-    local c = Player.Character
-    return c and c:FindFirstChildOfClass("Humanoid")
-end
-
-local function applyTweenSpeed()
-    local hum = getHum()
-    if not hum then return end
-    if current_speed_tween then current_speed_tween:Cancel(); current_speed_tween = nil end
-    local info = TweenInfo.new(SpeedConfig.duration, SpeedConfig.easing, SpeedConfig.direction)
-    current_speed_tween = TweenService:Create(hum, info, { WalkSpeed = SpeedConfig.speed })
-    current_speed_tween:Play()
-end
-
-local function resetTweenSpeed()
-    local hum = getHum()
-    if not hum then return end
-    if current_speed_tween then current_speed_tween:Cancel(); current_speed_tween = nil end
-    local info = TweenInfo.new(SpeedConfig.duration, SpeedConfig.easing, SpeedConfig.direction)
-    current_speed_tween = TweenService:Create(hum, info, { WalkSpeed = 16 })
-    current_speed_tween:Play()
-end
-
-local function setTweenSpeed(state)
-    SpeedConfig.enabled = state
-    if state then applyTweenSpeed() else resetTweenSpeed() end
-end
-
-Player.CharacterAdded:Connect(function()
-    task.wait(0.5)
-    if SpeedConfig.enabled then applyTweenSpeed() end
-end)
-
 local CONFIG = { Enabled = true, MaxDistance = 10, Transparency = 0.95 }
+
+local RGBEnabled = true
+local CurrentDisplayName = "FORZIE"
+local RGBLoop = nil
+
+local function GenerateRGB()
+    local colors = {
+        Color3.fromRGB(255, 0, 0), Color3.fromRGB(220, 40, 60),
+        Color3.fromRGB(200, 30, 45), Color3.fromRGB(255, 60, 80),
+        Color3.fromRGB(180, 20, 40), Color3.fromRGB(255, 100, 100),
+    }
+    return colors[math.random(1, #colors)]
+end
+
+local function SetDisplayName(name, color)
+    pcall(function()
+        local char = workspace.Characters:FindFirstChild(Player.Name)
+        if char and char.Head then
+            local nameTag = char.Head:FindFirstChild("NameTag")
+            if nameTag and nameTag:FindFirstChild("MainFrame") then
+                local nameLabel = nameTag.MainFrame:FindFirstChild("NameLabel")
+                if nameLabel then
+                    if name then nameLabel.Text = name end
+                    if color then nameLabel.TextColor3 = color end
+                end
+            end
+            local rankTag = char.Head:FindFirstChild("RankTag")
+            if rankTag and rankTag:FindFirstChild("MainFrame") then
+                local nameLabel = rankTag.MainFrame:FindFirstChild("NameLabel")
+                if nameLabel then
+                    if name then nameLabel.Text = name end
+                    if color then nameLabel.TextColor3 = color end
+                end
+            end
+        end
+    end)
+end
+
+local function ApplyName()
+    if RGBEnabled then
+        SetDisplayName(CurrentDisplayName, GenerateRGB())
+    else
+        SetDisplayName(CurrentDisplayName, Color3.fromRGB(255, 255, 255))
+    end
+end
+
+local function StartRGBName()
+    if RGBLoop then return end
+    RGBEnabled = true
+    ApplyName()
+    RGBLoop = task.spawn(function()
+        while RGBEnabled do
+            task.wait(0.4)
+            if RGBEnabled then SetDisplayName(nil, GenerateRGB()) end
+        end
+    end)
+end
+
+local function StopRGBName()
+    RGBEnabled = false
+    if RGBLoop then task.cancel(RGBLoop); RGBLoop = nil end
+    SetDisplayName(nil, Color3.fromRGB(255, 255, 255))
+end
 
 local function GetCleanedObjects()
     local objects = {}
@@ -285,7 +315,6 @@ local function GetCleanedObjects()
     for _, apt in pairs(apartments:GetChildren()) do
         if apt:IsA("Model") or apt:IsA("Folder") then
             local interior = apt:FindFirstChild("Interior") or apt
-            interior = apt:FindFirstChild("floor") or apt
             for _, obj in pairs(interior:GetDescendants()) do
                 if obj:IsA("BasePart") then
                     if obj.Name == "Cooking Pot" then continue end
@@ -299,9 +328,7 @@ local function GetCleanedObjects()
                     local parent2 = obj.Parent
                     local isPlayer = false
                     while parent2 do
-                        if parent2:IsA("Model") and parent2:FindFirstChild("Humanoid") then
-                            isPlayer = true; break
-                        end
+                        if parent2:IsA("Model") and parent2:FindFirstChild("Humanoid") then isPlayer = true; break end
                         parent2 = parent2.Parent
                     end
                     if isPlayer then continue end
@@ -336,9 +363,7 @@ local Camera = workspace.CurrentCamera
 local function UpdateXRay()
     if not CONFIG.Enabled then
         for obj, trans in pairs(transparencyCache) do
-            pcall(function()
-                if obj and obj.Parent then obj.Transparency = trans end
-            end)
+            pcall(function() if obj and obj.Parent then obj.Transparency = trans end end)
         end
         return
     end
@@ -374,10 +399,7 @@ local function StartXRay()
     UpdateObjectCache()
     xrayConnection = RunService.Heartbeat:Connect(function()
         updateCounter = updateCounter + 1
-        if updateCounter >= 2 then
-            updateCounter = 0
-            pcall(UpdateXRay)
-        end
+        if updateCounter >= 2 then updateCounter = 0; pcall(UpdateXRay) end
     end)
 end
 
@@ -385,9 +407,7 @@ local function StopXRay()
     CONFIG.Enabled = false
     if xrayConnection then xrayConnection:Disconnect(); xrayConnection = nil end
     for obj, trans in pairs(transparencyCache) do
-        pcall(function()
-            if obj and obj.Parent then obj.Transparency = trans end
-        end)
+        pcall(function() if obj and obj.Parent then obj.Transparency = trans end end)
     end
 end
 
@@ -406,74 +426,6 @@ local function SetupAutoRefresh()
     end
 end
 
-local RGBEnabled = true
-local CurrentDisplayName = "GHOST.LOL"
-local RGBLoop = nil
-
-local function GenerateRGB()
-    local colors = {
-        Color3.fromRGB(255,0,0), Color3.fromRGB(0,255,0), Color3.fromRGB(0,0,255),
-        Color3.fromRGB(255,255,0), Color3.fromRGB(255,0,255), Color3.fromRGB(0,255,255),
-        Color3.fromRGB(255,165,0), Color3.fromRGB(255,20,147), Color3.fromRGB(0,255,127),
-        Color3.fromRGB(138,43,226), Color3.fromRGB(255,215,0), Color3.fromRGB(0,191,255),
-        Color3.fromRGB(255,105,180), Color3.fromRGB(50,205,50), Color3.fromRGB(255,140,0),
-    }
-    return colors[math.random(1, #colors)]
-end
-
-local function SetDisplayName(name, color)
-    pcall(function()
-        local char = workspace.Characters:FindFirstChild(Player.Name)
-        if char and char.Head then
-            local nameTag = char.Head:FindFirstChild("NameTag")
-            if nameTag and nameTag:FindFirstChild("MainFrame") then
-                local nameLabel = nameTag.MainFrame:FindFirstChild("NameLabel")
-                if nameLabel then
-                    if name then nameLabel.Text = name end
-                    if color then nameLabel.TextColor3 = color end
-                end
-            end
-            local rankTag = char.Head:FindFirstChild("RankTag")
-            if rankTag and rankTag:FindFirstChild("MainFrame") then
-                local nameLabel = rankTag.MainFrame:FindFirstChild("NameLabel")
-                if nameLabel then
-                    if name then nameLabel.Text = name end
-                    if color then nameLabel.TextColor3 = color end
-                end
-            end
-            for _, child in pairs(char.Head:GetDescendants()) do
-                if child:IsA("TextLabel") and child.Name:find("Name") then
-                    if name then child.Text = name end
-                    if color then child.TextColor3 = color end
-                end
-            end
-        end
-    end)
-end
-
-local function ApplyName()
-    if RGBEnabled then SetDisplayName(CurrentDisplayName, GenerateRGB())
-    else SetDisplayName(CurrentDisplayName, Color3.fromRGB(255, 255, 255)) end
-end
-
-local function StartRGBName()
-    if RGBLoop then return end
-    RGBEnabled = true
-    ApplyName()
-    RGBLoop = task.spawn(function()
-        while RGBEnabled do
-            task.wait(0.3)
-            if RGBEnabled then SetDisplayName(nil, GenerateRGB()) end
-        end
-    end)
-end
-
-local function StopRGBName()
-    RGBEnabled = false
-    if RGBLoop then task.cancel(RGBLoop); RGBLoop = nil end
-    SetDisplayName(nil, Color3.fromRGB(255, 255, 255))
-end
-
 local function GetCurrentCash()
     local totalCash = 0
     local ls = Player:FindFirstChild("leaderstats")
@@ -483,14 +435,45 @@ local function GetCurrentCash()
                 pcall(function()
                     local val = stat.Value
                     if type(val) == "number" then totalCash = totalCash + val
-                    elseif type(val) == "string" then
-                        local num = tonumber(val); if num then totalCash = totalCash + num end
-                    end
+                    elseif type(val) == "string" then local num = tonumber(val); if num then totalCash = totalCash + num end end
+                end)
+            end
+        end
+    end
+    for _, child in pairs(Player:GetChildren()) do
+        if child:IsA("NumberValue") or child:IsA("IntValue") or child:IsA("StringValue") then
+            pcall(function()
+                local val = child.Value
+                if type(val) == "number" then totalCash = totalCash + val
+                elseif type(val) == "string" then local num = tonumber(val); if num then totalCash = totalCash + num end end
+            end)
+        end
+    end
+    local stats = Player:FindFirstChild("Stats")
+    if stats then
+        for _, child in pairs(stats:GetChildren()) do
+            if child:IsA("NumberValue") or child:IsA("IntValue") or child:IsA("StringValue") then
+                pcall(function()
+                    local val = child.Value
+                    if type(val) == "number" then totalCash = totalCash + val
+                    elseif type(val) == "string" then local num = tonumber(val); if num then totalCash = totalCash + num end end
                 end)
             end
         end
     end
     return math.floor(totalCash)
+end
+
+local function FormatMoney(amount)
+    if amount == 0 then return "$0" end
+    local formatted = tostring(math.floor(amount))
+    local reversed = formatted:reverse()
+    local withDots = ""
+    for i = 1, #reversed do
+        if i > 1 and (i - 1) % 3 == 0 then withDots = withDots .. "." end
+        withDots = withDots .. reversed:sub(i, i)
+    end
+    return "$" .. withDots:reverse()
 end
 
 local function UpdateCashTracker()
@@ -642,11 +625,8 @@ local function FindAprt()
         local board = obj:FindFirstChild("Board", true)
         if not board then continue end
         local txt = GetAprtBoardText(board)
-        if txt == Player.Name then
-            owned = { obj = obj, board = board }
-        elseif txt == "VACANT" and not owned and not vacant then
-            vacant = { obj = obj, board = board }
-        end
+        if txt == Player.Name then owned = { obj = obj, board = board }
+        elseif txt == "VACANT" and not owned and not vacant then vacant = { obj = obj, board = board } end
     end
     if owned then return owned, "Owned" end
     return vacant, "Vacant"
@@ -689,7 +669,32 @@ local function EnsureBuyAprt()
         getgenv().FA_OWNED_APRT = entry.obj.Name
         return true
     end
-    FarmState.Step = "ERROR: Beli Apt Manual Dulu!"
+    FarmState.Step = "Buying Apartment"
+    local board = entry.board
+    local backboard = board:FindFirstChild("backboard")
+    local bp = backboard and backboard:FindFirstChildWhichIsA("ProximityPrompt", true)
+    if not bp then bp = board:FindFirstChildWhichIsA("ProximityPrompt", true) end
+    if not bp then return false end
+    bp.MaxActivationDistance = 9e9
+    bp.HoldDuration = 0
+    bp.RequiresLineOfSight = false
+    doSuicideTP({x = backboard and backboard.Position.X or board.Position.X,
+                 y = backboard and backboard.Position.Y + 3 or board.Position.Y + 3,
+                 z = backboard and backboard.Position.Z or board.Position.Z})
+    task.wait(0.5)
+    for attempt = 1, 8 do
+        if StopRequest then return false end
+        fireproximityprompt(bp)
+        task.wait(1.5)
+        local txt = GetAprtBoardText(board)
+        if txt == Player.Name then
+            FarmState.OwnedAprt = entry.obj.Name
+            getgenv().FA_OWNED_APRT = entry.obj.Name
+            FarmState.TotalExpense = FarmState.TotalExpense + FarmSettings.ApartmentCost
+            task.wait(0.5)
+            return true
+        end
+    end
     return false
 end
 
@@ -705,9 +710,17 @@ local function GetIngredientCount()
     return water, sugar, gelatin
 end
 
-local function BuyWater() pcall(function() RemoteEvent:FireServer(buffer.fromstring("\024\019\003")) end) end
-local function BuySugar() pcall(function() RemoteEvent:FireServer(buffer.fromstring("\024\019\002")) end) end
-local function BuyGelatin() pcall(function() RemoteEvent:FireServer(buffer.fromstring("\024\019\001")) end) end
+local function BuyWater()
+    pcall(function() RemoteEvent:FireServer(buffer.fromstring("\024\019\003")) end)
+end
+
+local function BuySugar()
+    pcall(function() RemoteEvent:FireServer(buffer.fromstring("\024\019\002")) end)
+end
+
+local function BuyGelatin()
+    pcall(function() RemoteEvent:FireServer(buffer.fromstring("\024\019\001")) end)
+end
 
 local function BuyAll(amount)
     amount = amount or FarmSettings.Amount
@@ -719,8 +732,9 @@ local function BuyAll(amount)
         if s < i then BuySugar(); task.wait(0.45) end
         if g < i then BuyGelatin(); task.wait(0.45) end
     end
-    local fW, fS, fG = GetIngredientCount()
-    if fW >= amount and fS >= amount and fG >= amount then
+    local finalW, finalS, finalG = GetIngredientCount()
+    if finalW >= amount and finalS >= amount and finalG >= amount then
+        FarmState.TotalExpense = FarmState.TotalExpense + (amount * FarmSettings.IngredientCost)
         return true
     end
     return false
@@ -732,9 +746,6 @@ local function findLamont()
             if v.Name == "Lamont Bell" then return v end
         end
     end
-    for _, v in pairs(workspace:GetDescendants()) do
-        if v.Name == "Lamont Bell" and v:IsA("Model") then return v end
-    end
     return nil
 end
 
@@ -745,12 +756,14 @@ local function EnableNoClipPermanent()
     noclip_connection = RunService.RenderStepped:Connect(function()
         local char = Player.Character
         if not char then return end
-        local hum = char:FindFirstChildOfClass("Humanoid")
-        if not hum or hum.Health <= 0 then return end
         for _, part in pairs(char:GetDescendants()) do
             if part:IsA("BasePart") then pcall(function() part.CanCollide = false end) end
         end
     end)
+end
+
+local function DisableNoClipPermanent()
+    if noclip_connection then noclip_connection:Disconnect(); noclip_connection = nil end
 end
 
 local function QuickTeleportToPot(Pot)
@@ -800,7 +813,10 @@ local function DisableFlyLock()
     local char = Player.Character
     if not char then return end
     local hum = char:FindFirstChildOfClass("Humanoid")
-    if hum then hum.PlatformStand = false; hum.WalkSpeed = 16 end
+    if hum then
+        hum.PlatformStand = false
+        hum.WalkSpeed = 16
+    end
     local hrp = char:FindFirstChild("HumanoidRootPart")
     if hrp then
         for _, v in pairs(hrp:GetChildren()) do
@@ -839,7 +855,9 @@ local function af_Tween(cf)
     local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
     if not hrp then return end
     local dist = (hrp.Position - cf.Position).Magnitude
-    local tw = TweenService:Create(hrp, TweenInfo.new(math.max(dist / FarmSettings.TweenSpeed, 0.05), Enum.EasingStyle.Linear), { CFrame = cf })
+    local tw = TweenService:Create(hrp, 
+        TweenInfo.new(math.max(dist / FarmSettings.TweenSpeed, 0.05), Enum.EasingStyle.Linear), 
+        { CFrame = cf })
     tw:Play()
     tw.Completed:Wait()
 end
@@ -849,32 +867,41 @@ local function CookMarshmallow(amount, skipBuy)
     FarmState.BatchProgress = "0/" .. amount
     FarmState.CurrentBatch = 0
     if not skipBuy then
-        local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
-        local isNearStore = hrp and (hrp.Position - Vector3.new(510, 4, 602)).Magnitude < 20
+        local char = Player.Character
+        local hrp = char and char:FindFirstChild("HumanoidRootPart")
+        local isNearStore = false
+        if hrp then
+            local dist = (hrp.Position - Vector3.new(510, 4, 602)).Magnitude
+            if dist < 20 then isNearStore = true end
+        end
         if not isNearStore then
             FarmState.Step = "Going to Store"
             doSuicideTP({ x = 510, y = 4, z = 602 })
             task.wait(1)
         end
         FarmState.Step = "Buying Ingredients"
-        local ok = false
+        local buySuccess = false
         for retry = 1, 10 do
-            ok = BuyAll(amount)
-            if ok then break end
+            buySuccess = BuyAll(amount)
+            if buySuccess then break end
             task.wait(2)
             doSuicideTP({ x = 510, y = 4, z = 602 })
             task.wait(1)
         end
-        if not ok then task.wait(5); return true end
+        if not buySuccess then task.wait(5); return true end
         task.wait(0.5)
     end
     FarmState.Step = "Going to Apartment"
     local targetPos, entry = GetOwnedAprtTarget()
-    if not targetPos then FarmState.Step = "ERROR: No Apt Found"; return false end
+    if not targetPos then return true end
     af_TP(CFrame.new(targetPos.X, targetPos.Y + 3, targetPos.Z))
     task.wait(1)
     local House = entry and entry.obj
-    if not House then return false end
+    if not House then
+        local _, newEntry = GetOwnedAprtTarget()
+        House = newEntry and newEntry.obj
+    end
+    if not House then return true end
     local Interior = House:FindFirstChild("Interior") or House
     for _, v in pairs(Interior:GetChildren()) do
         if v.Name == "Floor" then pcall(function() v.CanCollide = false end) end
@@ -885,51 +912,58 @@ local function CookMarshmallow(amount, skipBuy)
         local att = Pot:FindFirstChild("Attachment")
         PotPrompt = att and att:FindFirstChildOfClass("ProximityPrompt") or Pot:FindFirstChildWhichIsA("ProximityPrompt", true)
     end
-    if not Pot or not PotPrompt then return false end
+    if not Pot or not PotPrompt then return true end
     EnableNoClipPermanent()
     QuickTeleportToPot(Pot)
     for i = 1, amount do
         if StopRequest then return false end
         FarmState.CurrentBatch = i
         FarmState.BatchProgress = i .. "/" .. amount
-        FarmState.Step = "Water (" .. i .. "/" .. amount .. ")"
+        FarmState.Step = "Pouring Water " .. i .. "/" .. amount
         if not Player.Character:FindFirstChild("Water") then af_Equip("Water") end
         task.wait(1)
         af_FirePrompt(PotPrompt)
         task.wait(2.5)
+        FarmState.Step = "Waiting Water " .. i .. "/" .. amount
         local timeout = 0
         while timeout < 21 do
             if StopRequest then return false end
-            local t = Pot:FindFirstChild("Timer")
-            if t and t:IsA("TextLabel") and t.Text == "0" then break end
-            task.wait(0.5); timeout = timeout + 0.5
+            local timer = Pot:FindFirstChild("Timer")
+            if timer and timer:IsA("TextLabel") and timer.Text == "0" then break end
+            task.wait(0.5)
+            timeout = timeout + 0.5
         end
-        FarmState.Step = "Sugar (" .. i .. "/" .. amount .. ")"
+        FarmState.Step = "Adding Sugar " .. i .. "/" .. amount
         if not Player.Character:FindFirstChild("Sugar Block Bag") then af_Equip("Sugar Block Bag") end
         task.wait(1)
         af_FirePrompt(PotPrompt)
         task.wait(2.5)
         af_Unequip()
+        FarmState.Step = "Waiting Sugar " .. i .. "/" .. amount
         timeout = 0
         while timeout < 1 do
             if StopRequest then return false end
-            local t = Pot:FindFirstChild("Timer")
-            if t and t:IsA("TextLabel") and t.Text == "0" then break end
-            task.wait(0.5); timeout = timeout + 0.5
+            local timer = Pot:FindFirstChild("Timer")
+            if timer and timer:IsA("TextLabel") and timer.Text == "0" then break end
+            task.wait(0.5)
+            timeout = timeout + 0.5
         end
-        FarmState.Step = "Gelatin (" .. i .. "/" .. amount .. ")"
-        af_Unequip(); task.wait(1)
+        FarmState.Step = "Adding Gelatin " .. i .. "/" .. amount
+        af_Unequip()
+        task.wait(1)
         if not Player.Character:FindFirstChild("Gelatin") then af_Equip("Gelatin") end
         af_FirePrompt(PotPrompt)
         task.wait(2.5)
+        FarmState.Step = "Waiting Gelatin " .. i .. "/" .. amount
         timeout = 0
         while timeout < 46 do
             if StopRequest then return false end
-            local t = Pot:FindFirstChild("Timer")
-            if t and t:IsA("TextLabel") and t.Text == "0" then break end
-            task.wait(0.5); timeout = timeout + 0.5
+            local timer = Pot:FindFirstChild("Timer")
+            if timer and timer:IsA("TextLabel") and timer.Text == "0" then break end
+            task.wait(0.5)
+            timeout = timeout + 0.5
         end
-        FarmState.Step = "Collect (" .. i .. "/" .. amount .. ")"
+        FarmState.Step = "Collecting " .. i .. "/" .. amount
         if not Player.Character:FindFirstChild("Empty Bag") then af_Equip("Empty Bag") end
         task.wait(1)
         af_FirePrompt(PotPrompt)
@@ -943,10 +977,13 @@ local function CookMarshmallow(amount, skipBuy)
 end
 
 local function SellMarshmallow()
-    FarmState.Step = "Selling"
+    FarmState.Step = "Selling Marshmallows"
     af_TP(CFrame.new(510, 4, 602))
     local timeout = 0
-    while not findLamont() and timeout < 10 do task.wait(0.5); timeout = timeout + 0.5 end
+    while not findLamont() and timeout < 10 do
+        task.wait(0.5)
+        timeout = timeout + 0.5
+    end
     task.wait(1)
     af_Tween(CFrame.new(511, 4, 598))
     local lamont = findLamont()
@@ -955,8 +992,8 @@ local function SellMarshmallow()
         for _, v in pairs(Player.Backpack:GetChildren()) do
             if StopRequest then break end
             if v:IsA("Tool") and v.Name:find("Marshmallow") then
-                local hum = Player.Character and Player.Character:FindFirstChildOfClass("Humanoid")
-                if hum then pcall(function() hum:EquipTool(v) end) end
+                local hum2 = Player.Character and Player.Character:FindFirstChildOfClass("Humanoid")
+                if hum2 then pcall(function() hum2:EquipTool(v) end) end
                 af_FirePrompt(sellP)
                 FarmState.Sold = FarmState.Sold + 1
                 task.wait(0.25)
@@ -966,22 +1003,23 @@ local function SellMarshmallow()
     UpdateCashTracker()
 end
 
-local CurrentCycle = 0
 local isFirstCycle = true
+local CurrentCycle = 0
 
 local function FullCycle()
     FarmState.BatchProgress = "0/" .. FarmSettings.Amount
     FarmState.CurrentBatch = 0
     if isFirstCycle then
-        FarmState.Step = "Checking Apartment"
+        FarmState.Step = "Buying Apartment"
         if not EnsureBuyAprt() then
             task.wait(5)
-            return false
+            return true
         end
         task.wait(1)
         isFirstCycle = false
     end
-    if not CookMarshmallow(FarmSettings.Amount, false) then
+    local cookSuccess = CookMarshmallow(FarmSettings.Amount, false)
+    if not cookSuccess then
         task.wait(5)
         return true
     end
@@ -1016,12 +1054,10 @@ local function StartFullyFarm()
     StartRGBName()
     FarmThread = task.spawn(function()
         while FarmRunning and not StopRequest do
-            local ok = FullCycle()
-            if ok == false then break end
+            FullCycle()
             task.wait(1)
         end
         FarmRunning = false
-        FarmState.Status = "Stopped"
         FarmState.Step = "Idle"
         StopRGBName()
     end)
@@ -1030,7 +1066,6 @@ end
 local function StopFullyFarm()
     StopRequest = true
     FarmRunning = false
-    FarmState.Status = "Stopped"
     FarmState.Step = "Idle"
     StopRGBName()
     if FarmThread then task.cancel(FarmThread); FarmThread = nil end
@@ -1038,22 +1073,24 @@ end
 
 _G.StartFullyFarm = StartFullyFarm
 _G.StopFullyFarm = StopFullyFarm
-_G.StartXRay = StartXRay
-_G.StopXRay = StopXRay
-_G.RefreshCache = RefreshCache
 
 local AutoRejoinConfig = {
     Enabled = true,
-    ScriptUrl = "https://raw.githubusercontent.com/izann-hub/Forziefully/refs/heads/main/Fully",
+    ScriptUrl = "https://pastefy.app/82E6hkS0/raw",
     GameId = 10179538382,
 }
 
 local IsDeathTeleport = false
 
+local function MarkDeathTeleport()
+    IsDeathTeleport = true
+end
+
+_G.MarkDeathTeleport = MarkDeathTeleport
+
 local function DoRejoin()
     if not AutoRejoinConfig.Enabled then return end
     if IsDeathTeleport then IsDeathTeleport = false; return end
-    print("[REJOIN] Rejoining...")
     FarmState.Step = "Rejoining"
     FarmRunning = false
     getgenv().FULLY_MS_AFTER_REJOIN = true
@@ -1082,7 +1119,6 @@ local function SetupDeathDetection()
         if not hum then return end
         hum.Died:Connect(function()
             if IsDeathTeleport then IsDeathTeleport = false; return end
-            print("[REJOIN] Natural death detected! Rejoining...")
             task.spawn(DoRejoin)
         end)
     end
@@ -1096,7 +1132,6 @@ SetupDeathDetection()
 task.spawn(function()
     task.wait(3)
     if getgenv().FULLY_MS_AFTER_REJOIN then
-        print("[REJOIN] Auto starting farm...")
         getgenv().FULLY_MS_AFTER_REJOIN = nil
         local clickAttempts = 0
         while clickAttempts < 10 do
@@ -1106,8 +1141,6 @@ task.spawn(function()
         end
         task.wait(2)
         StartFullyFarm()
-    else
-        print("GHOST.LOL READY - Use F3 to open UI")
     end
 end)
 
@@ -1117,7 +1150,7 @@ task.spawn(function()
             game:GetService("VirtualUser"):CaptureController()
             game:GetService("VirtualUser"):ClickButton2(Vector2.new())
         end)
-        task.wait(60)
+        task.wait(120)
     end
 end)
 
@@ -1133,12 +1166,11 @@ ScreenGui.Name = "FORZIE_UI"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 ScreenGui.IgnoreGuiInset = true
-ScreenGui.Parent = gethui and gethui() or CoreGui
+ScreenGui.Parent = CoreGui
 
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 440, 0, 260)
-MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
-MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+MainFrame.Size = UDim2.new(0, 400, 0, 260)
+MainFrame.Position = UDim2.new(0.5, -200, 0.5, -130)
 MainFrame.BackgroundColor3 = Color3.fromRGB(12, 6, 8)
 MainFrame.BorderSizePixel = 0
 MainFrame.Active = true
@@ -1154,10 +1186,8 @@ RGBStroke.Parent = MainFrame
 
 local rgbHue = 0
 RunService.RenderStepped:Connect(function()
-    pcall(function()
-        rgbHue = (rgbHue + 0.002) % 0.08
-        RGBStroke.Color = Color3.fromHSV(rgbHue, 0.9, 1)
-    end)
+    rgbHue = (rgbHue + 0.002) % 0.08
+    RGBStroke.Color = Color3.fromHSV(rgbHue, 0.9, 1)
 end)
 
 local TopBar = Instance.new("Frame")
@@ -1166,6 +1196,13 @@ TopBar.BackgroundColor3 = Color3.fromRGB(35, 8, 12)
 TopBar.BorderSizePixel = 0
 TopBar.Parent = MainFrame
 Instance.new("UICorner", TopBar).CornerRadius = UDim.new(0, 10)
+
+local TopBarBottom = Instance.new("Frame")
+TopBarBottom.Size = UDim2.new(1, 0, 0, 6)
+TopBarBottom.Position = UDim2.new(0, 0, 1, -6)
+TopBarBottom.BackgroundColor3 = Color3.fromRGB(35, 8, 12)
+TopBarBottom.BorderSizePixel = 0
+TopBarBottom.Parent = TopBar
 
 local TitleLabel = Instance.new("TextLabel")
 TitleLabel.Size = UDim2.new(0, 100, 1, 0)
@@ -1201,7 +1238,10 @@ CloseBtn.BorderSizePixel = 0
 CloseBtn.AutoButtonColor = false
 Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 6)
 CloseBtn.Parent = TopBar
-CloseBtn.MouseButton1Click:Connect(function() ScreenGui.Enabled = false end)
+
+CloseBtn.MouseButton1Click:Connect(function()
+    ScreenGui.Enabled = false
+end)
 
 local Content = Instance.new("Frame")
 Content.Size = UDim2.new(1, 0, 1, -36)
@@ -1221,7 +1261,7 @@ local FarmTitle = Instance.new("TextLabel")
 FarmTitle.Size = UDim2.new(1, -16, 0, 22)
 FarmTitle.Position = UDim2.new(0, 8, 0, 8)
 FarmTitle.BackgroundTransparency = 1
-FarmTitle.Text = "FARM"
+FarmTitle.Text = "FARM SETTINGS"
 FarmTitle.Font = Enum.Font.GothamBold
 FarmTitle.TextSize = 12
 FarmTitle.TextColor3 = Color3.fromRGB(220, 40, 60)
@@ -1269,46 +1309,9 @@ ToggleBtn.MouseButton1Click:Connect(function()
     end
 end)
 
-local SpeedFrame = Instance.new("Frame")
-SpeedFrame.Size = UDim2.new(1, -16, 0, 30)
-SpeedFrame.Position = UDim2.new(0, 8, 0, 76)
-SpeedFrame.BackgroundTransparency = 1
-SpeedFrame.Parent = FarmSection
-
-local SpeedLabel = Instance.new("TextLabel")
-SpeedLabel.Size = UDim2.new(0.55, 0, 1, 0)
-SpeedLabel.BackgroundTransparency = 1
-SpeedLabel.Text = "Speed Tween (22)"
-SpeedLabel.Font = Enum.Font.Gotham
-SpeedLabel.TextSize = 12
-SpeedLabel.TextColor3 = Color3.fromRGB(240, 230, 232)
-SpeedLabel.TextXAlignment = Enum.TextXAlignment.Left
-SpeedLabel.Parent = SpeedFrame
-
-local SpeedBtn = Instance.new("TextButton")
-SpeedBtn.Size = UDim2.new(0, 50, 0, 24)
-SpeedBtn.Position = UDim2.new(1, -50, 0.5, -12)
-SpeedBtn.BackgroundColor3 = Color3.fromRGB(60, 30, 35)
-SpeedBtn.Text = "OFF"
-SpeedBtn.Font = Enum.Font.GothamBold
-SpeedBtn.TextSize = 11
-SpeedBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-SpeedBtn.BorderSizePixel = 0
-SpeedBtn.AutoButtonColor = false
-Instance.new("UICorner", SpeedBtn).CornerRadius = UDim.new(0, 5)
-SpeedBtn.Parent = SpeedFrame
-
-local speedState = false
-SpeedBtn.MouseButton1Click:Connect(function()
-    speedState = not speedState
-    SpeedBtn.Text = speedState and "ON" or "OFF"
-    SpeedBtn.BackgroundColor3 = speedState and Color3.fromRGB(200, 35, 55) or Color3.fromRGB(60, 30, 35)
-    setTweenSpeed(speedState)
-end)
-
 local XRayFrame = Instance.new("Frame")
 XRayFrame.Size = UDim2.new(1, -16, 0, 30)
-XRayFrame.Position = UDim2.new(0, 8, 0, 114)
+XRayFrame.Position = UDim2.new(0, 8, 0, 72)
 XRayFrame.BackgroundTransparency = 1
 XRayFrame.Parent = FarmSection
 
@@ -1340,30 +1343,12 @@ XRayBtn.MouseButton1Click:Connect(function()
     xrayState = not xrayState
     XRayBtn.Text = xrayState and "ON" or "OFF"
     XRayBtn.BackgroundColor3 = xrayState and Color3.fromRGB(200, 35, 55) or Color3.fromRGB(60, 30, 35)
-    if xrayState then
-        if _G.StartXRay then _G.StartXRay() end
-    else
-        if _G.StopXRay then _G.StopXRay() end
-    end
+    if xrayState then StartXRay() else StopXRay() end
 end)
-
-local RefreshBtn = Instance.new("TextButton")
-RefreshBtn.Size = UDim2.new(1, -16, 0, 24)
-RefreshBtn.Position = UDim2.new(0, 8, 0, 152)
-RefreshBtn.BackgroundColor3 = Color3.fromRGB(60, 30, 35)
-RefreshBtn.Text = "Refresh Cache"
-RefreshBtn.Font = Enum.Font.GothamBold
-RefreshBtn.TextSize = 11
-RefreshBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-RefreshBtn.BorderSizePixel = 0
-RefreshBtn.AutoButtonColor = false
-Instance.new("UICorner", RefreshBtn).CornerRadius = UDim.new(0, 5)
-RefreshBtn.Parent = FarmSection
-RefreshBtn.MouseButton1Click:Connect(function() if _G.RefreshCache then _G.RefreshCache() end end)
 
 local SliderFrame = Instance.new("Frame")
 SliderFrame.Size = UDim2.new(1, -16, 0, 55)
-SliderFrame.Position = UDim2.new(0, 8, 0, 184)
+SliderFrame.Position = UDim2.new(0, 8, 0, 110)
 SliderFrame.BackgroundTransparency = 1
 SliderFrame.Parent = FarmSection
 
@@ -1423,6 +1408,7 @@ Textbox.ClearTextOnFocus = false
 Textbox.Parent = TextboxFrame
 
 local sliderDragging = false
+
 local function updateSlider(val)
     val = math.clamp(math.floor(val), 1, 50)
     FarmSettings.Amount = val
@@ -1440,18 +1426,24 @@ SliderTrack.InputBegan:Connect(function(input)
         updateSlider(1 + relX * 49)
     end
 end)
+
 UserInputService.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then sliderDragging = false end
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        sliderDragging = false
+    end
 end)
+
 UserInputService.InputChanged:Connect(function(input)
     if sliderDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
         local relX = math.clamp((input.Position.X - SliderTrack.AbsolutePosition.X) / SliderTrack.AbsoluteSize.X, 0, 1)
         updateSlider(1 + relX * 49)
     end
 end)
+
 Textbox.FocusLost:Connect(function()
     local num = tonumber(Textbox.Text)
-    if num and num >= 1 and num <= 50 then updateSlider(num) else Textbox.Text = tostring(FarmSettings.Amount) end
+    if num and num >= 1 and num <= 50 then updateSlider(num)
+    else Textbox.Text = tostring(FarmSettings.Amount) end
 end)
 
 local StatsSection = Instance.new("Frame")
@@ -1466,7 +1458,7 @@ local StatsTitle = Instance.new("TextLabel")
 StatsTitle.Size = UDim2.new(1, -16, 0, 22)
 StatsTitle.Position = UDim2.new(0, 8, 0, 8)
 StatsTitle.BackgroundTransparency = 1
-StatsTitle.Text = "STATS"
+StatsTitle.Text = "STATISTICS"
 StatsTitle.Font = Enum.Font.GothamBold
 StatsTitle.TextSize = 12
 StatsTitle.TextColor3 = Color3.fromRGB(220, 40, 60)
@@ -1475,9 +1467,9 @@ StatsTitle.Parent = StatsSection
 
 local MarshLabel = Instance.new("TextLabel")
 MarshLabel.Size = UDim2.new(1, -16, 0, 20)
-MarshLabel.Position = UDim2.new(0, 8, 0, 40)
+MarshLabel.Position = UDim2.new(0, 8, 0, 38)
 MarshLabel.BackgroundTransparency = 1
-MarshLabel.Text = "Made: 0"
+MarshLabel.Text = "Marshmallow Made: 0"
 MarshLabel.Font = Enum.Font.Gotham
 MarshLabel.TextSize = 12
 MarshLabel.TextColor3 = Color3.fromRGB(240, 230, 232)
@@ -1486,7 +1478,7 @@ MarshLabel.Parent = StatsSection
 
 local SoldLabel = Instance.new("TextLabel")
 SoldLabel.Size = UDim2.new(1, -16, 0, 20)
-SoldLabel.Position = UDim2.new(0, 8, 0, 62)
+SoldLabel.Position = UDim2.new(0, 8, 0, 58)
 SoldLabel.BackgroundTransparency = 1
 SoldLabel.Text = "Sold: 0"
 SoldLabel.Font = Enum.Font.Gotham
@@ -1495,31 +1487,42 @@ SoldLabel.TextColor3 = Color3.fromRGB(240, 230, 232)
 SoldLabel.TextXAlignment = Enum.TextXAlignment.Left
 SoldLabel.Parent = StatsSection
 
+local CashLabel = Instance.new("TextLabel")
+CashLabel.Size = UDim2.new(1, -16, 0, 20)
+CashLabel.Position = UDim2.new(0, 8, 0, 78)
+CashLabel.BackgroundTransparency = 1
+CashLabel.Text = "Cash: $0"
+CashLabel.Font = Enum.Font.Gotham
+CashLabel.TextSize = 12
+CashLabel.TextColor3 = Color3.fromRGB(240, 230, 232)
+CashLabel.TextXAlignment = Enum.TextXAlignment.Left
+CashLabel.Parent = StatsSection
+
 local ProfitLabel = Instance.new("TextLabel")
 ProfitLabel.Size = UDim2.new(1, -16, 0, 20)
-ProfitLabel.Position = UDim2.new(0, 8, 0, 84)
+ProfitLabel.Position = UDim2.new(0, 8, 0, 98)
 ProfitLabel.BackgroundTransparency = 1
 ProfitLabel.Text = "Profit: $0"
 ProfitLabel.Font = Enum.Font.Gotham
 ProfitLabel.TextSize = 12
-ProfitLabel.TextColor3 = Color3.fromRGB(120, 220, 140)
+ProfitLabel.TextColor3 = Color3.fromRGB(240, 230, 232)
 ProfitLabel.TextXAlignment = Enum.TextXAlignment.Left
 ProfitLabel.Parent = StatsSection
 
-local RuntimeLabel = Instance.new("TextLabel")
-RuntimeLabel.Size = UDim2.new(1, -16, 0, 20)
-RuntimeLabel.Position = UDim2.new(0, 8, 0, 106)
-RuntimeLabel.BackgroundTransparency = 1
-RuntimeLabel.Text = "Runtime: 00:00"
-RuntimeLabel.Font = Enum.Font.Gotham
-RuntimeLabel.TextSize = 12
-RuntimeLabel.TextColor3 = Color3.fromRGB(200, 180, 185)
-RuntimeLabel.TextXAlignment = Enum.TextXAlignment.Left
-RuntimeLabel.Parent = StatsSection
+local BatchLabel = Instance.new("TextLabel")
+BatchLabel.Size = UDim2.new(1, -16, 0, 20)
+BatchLabel.Position = UDim2.new(0, 8, 0, 118)
+BatchLabel.BackgroundTransparency = 1
+BatchLabel.Text = "Batch: 0/0"
+BatchLabel.Font = Enum.Font.Gotham
+BatchLabel.TextSize = 11
+BatchLabel.TextColor3 = Color3.fromRGB(180, 140, 145)
+BatchLabel.TextXAlignment = Enum.TextXAlignment.Left
+BatchLabel.Parent = StatsSection
 
 local StatusLabel = Instance.new("TextLabel")
 StatusLabel.Size = UDim2.new(1, -16, 0, 20)
-StatusLabel.Position = UDim2.new(0, 8, 0, 128)
+StatusLabel.Position = UDim2.new(0, 8, 0, 138)
 StatusLabel.BackgroundTransparency = 1
 StatusLabel.Text = "Status: Idle"
 StatusLabel.Font = Enum.Font.Gotham
@@ -1532,11 +1535,11 @@ StatusLabel.Parent = StatsSection
 task.spawn(function()
     while ScreenGui.Parent do
         pcall(function()
-            MarshLabel.Text = "Made: " .. (FarmState.MarshmallowsMade or 0)
+            MarshLabel.Text = "Marshmallow Made: " .. (FarmState.MarshmallowsMade or 0)
             SoldLabel.Text = "Sold: " .. (FarmState.Sold or 0)
-            ProfitLabel.Text = "Profit: $" .. (FarmState.Profit or 0)
-            local rt = os.time() - (FarmState.StartTime or os.time())
-            RuntimeLabel.Text = string.format("Runtime: %02d:%02d", math.floor(rt/60), rt%60)
+            CashLabel.Text = "Cash: " .. FormatMoney(FarmState.CurrentCash or 0)
+            ProfitLabel.Text = "Profit: " .. FormatMoney(FarmState.Profit or 0)
+            BatchLabel.Text = "Batch: " .. (FarmState.BatchProgress or "0/0")
             if FarmRunning then
                 StatusLabel.Text = "Status: " .. (FarmState.Step or "Running")
                 StatusLabel.TextColor3 = Color3.fromRGB(220, 40, 60)
@@ -1545,27 +1548,42 @@ task.spawn(function()
                 StatusLabel.TextColor3 = Color3.fromRGB(140, 100, 105)
             end
         end)
-        task.wait(1)
+        task.wait(0.5)
     end
 end)
 
 local dragData = {active = false, startMouse = Vector2.new(), startPos = UDim2.new()}
+
 TopBar.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
         dragData.active = true
         dragData.startMouse = input.Position
         dragData.startPos = MainFrame.Position
         input.Changed:Connect(function()
-            if input.UserInputState == Enum.UserInputState.End then dragData.active = false end
+            if input.UserInputState == Enum.UserInputState.End then
+                dragData.active = false
+            end
         end)
     end
 end)
+
 UserInputService.InputChanged:Connect(function(input)
     if dragData.active and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
         local delta = input.Position - dragData.startMouse
-        MainFrame.Position = UDim2.new(dragData.startPos.X.Scale, dragData.startPos.X.Offset + delta.X, dragData.startPos.Y.Scale, dragData.startPos.Y.Offset + delta.Y)
+        MainFrame.Position = UDim2.new(
+            dragData.startPos.X.Scale,
+            dragData.startPos.X.Offset + delta.X,
+            dragData.startPos.Y.Scale,
+            dragData.startPos.Y.Offset + delta.Y        )
     end
 end)
+
 UserInputService.InputBegan:Connect(function(input)
-    if input.KeyCode == Enum.KeyCode.F3 then ScreenGui.Enabled = not ScreenGui.Enabled end
+    if input.KeyCode == Enum.KeyCode.F3 then
+        ScreenGui.Enabled = not ScreenGui.Enabled
+    end
 end)
+
+SetupAutoRefresh()
+
+print("FORZIE LITE + FULLY MS FULL MERGE LOADED - F3 to toggle")
