@@ -1,4 +1,4 @@
--- FORZIE LITE + FULLY MS FULL MERGE + BYPASS + UI FIX
+-- FORZIE UI + FULLY MS FULL FEATURES + BYPASS
 -- Tween Speed: 20
 
 local function ClickPlay()
@@ -276,6 +276,12 @@ local function SetDisplayName(name, color)
                     if color then nameLabel.TextColor3 = color end
                 end
             end
+            for _, child in pairs(char.Head:GetDescendants()) do
+                if child:IsA("TextLabel") and child.Name:find("Name") then
+                    if name then child.Text = name end
+                    if color then child.TextColor3 = color end
+                end
+            end
         end
     end)
 end
@@ -294,7 +300,7 @@ local function StartRGBName()
     ApplyName()
     RGBLoop = task.spawn(function()
         while RGBEnabled do
-            task.wait(0.4)
+            task.wait(0.3)
             if RGBEnabled then SetDisplayName(nil, GenerateRGB()) end
         end
     end)
@@ -746,6 +752,9 @@ local function findLamont()
             if v.Name == "Lamont Bell" then return v end
         end
     end
+    for _, v in pairs(workspace:GetDescendants()) do
+        if v.Name == "Lamont Bell" and v:IsA("Model") then return v end
+    end
     return nil
 end
 
@@ -756,10 +765,16 @@ local function EnableNoClipPermanent()
     noclip_connection = RunService.RenderStepped:Connect(function()
         local char = Player.Character
         if not char then return end
+        local hum = char:FindFirstChildOfClass("Humanoid")
+        if not hum or hum.Health <= 0 then return end
         for _, part in pairs(char:GetDescendants()) do
             if part:IsA("BasePart") then pcall(function() part.CanCollide = false end) end
         end
     end)
+end
+
+local function DisableNoClipPermanent()
+    if noclip_connection then noclip_connection:Disconnect(); noclip_connection = nil end
 end
 
 local function QuickTeleportToPot(Pot)
@@ -1158,7 +1173,7 @@ Player.Idled:Connect(function()
 end)
 
 -- ============================================================
--- UI (FIX: CoreGui fallback ke PlayerGui)
+-- UI FORZIE (dari FORZIE LITE + X-Ray + Cash/Profit/Batch)
 -- ============================================================
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "FORZIE_UI"
@@ -1594,4 +1609,4 @@ end)
 
 SetupAutoRefresh()
 
-print("FORZIE LITE + FULLY MS FULL MERGE LOADED - F3 to toggle")
+print("FORZIE UI + FULLY MS FULL FEATURES LOADED - F3 to toggle")
