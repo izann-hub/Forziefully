@@ -1,5 +1,5 @@
 -- ============================================================
--- FULLY MS V1 + UI FORZIE (STATIS - TANPA CASH/PROFIT)
+-- FULLY MS V1 FORZIE
 -- ============================================================
 
 -- ============================================================
@@ -364,7 +364,7 @@ end
 -- RGB NAME
 -- ============================================================
 local RGBEnabled = true
-local CurrentDisplayName = "FAHRIL"
+local CurrentDisplayName = "FORZIE"
 local RGBLoop = nil
 local function GenerateRGB()
     local colors = {
